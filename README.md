@@ -2,19 +2,11 @@
 
 
 
-!\[Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-
-!\[Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue?logo=pandas)
-
-!\[Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange?logo=scikitlearn)
-
-!\[Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red?logo=streamlit)
-
-!\[License](https://img.shields.io/badge/License-MIT-green)
-
-
-
-\---
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue?logo=pandas&logoColor=white)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange?logo=scikitlearn&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red?logo=streamlit&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 
 
