@@ -1,68 +1,196 @@
 import streamlit as st
 import pandas as pd
 import joblib
+from datetime import date
 
-# Load saved files
-model = joblib.load("best_clean_arrest_model.pkl")
-feature_columns = joblib.load("clean_feature_columns.pkl")
-category_mappings = joblib.load("category_mappings.pkl")
-label_encoder = joblib.load("label_encoder.pkl")
-# Load the cleaned dataset
-df = pd.read_csv("nypd_arrest_data_cleaned.csv")
 
+# ---------------------------------------------------------
+# PAGE CONFIGURATION
+# ---------------------------------------------------------
 st.set_page_config(
     page_title="NYPD Arrest Law Category Prediction",
-    page_icon="🚔",
+    page_icon="🚓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""
-<style>
-.main-title {
-    font-size: 42px;
-    font-weight: 800;
-}
-</style>
-""", unsafe_allow_html=True)
 
+# ---------------------------------------------------------
+# LOAD LEAKAGE-CONTROLLED DEPLOYMENT FILES
+# ---------------------------------------------------------
+@st.cache_resource
+def load_model_files():
+    model = joblib.load("best_clean_arrest_model.pkl")
+    category_mappings = joblib.load("category_mappings.pkl")
+    target_classes = joblib.load("target_classes.pkl")
+    return model, category_mappings, target_classes
+
+
+@st.cache_data
+def load_dataset():
+    return pd.read_csv("nypd_arrest_data_cleaned.csv", low_memory=False)
+
+
+try:
+    model, category_mappings, target_classes = load_model_files()
+    df = load_dataset()
+
+except Exception as error:
+    st.error(f"Unable to load the deployment files: {error}")
+    st.stop()
+
+
+# ---------------------------------------------------------
+# HELPER FUNCTION
+# ---------------------------------------------------------
+def clean_options(values):
+    cleaned = []
+
+    for value in values:
+        if pd.notna(value):
+            text = str(value).strip()
+
+            if text.lower() not in ["", "nan", "none", "(null)"]:
+                cleaned.append(value)
+
+    return sorted(set(cleaned), key=lambda item: str(item))
+
+
+# ---------------------------------------------------------
+# MODEL INFORMATION
+# ---------------------------------------------------------
+classifier = model.named_steps.get("classifier")
+
+classifier_name = (
+    type(classifier).__name__
+    if classifier is not None
+    else type(model).__name__
+)
+
+display_algorithm = (
+    "Gradient Boosting Classifier"
+    if classifier_name == "GradientBoostingClassifier"
+    else classifier_name
+)
+
+expected_features = [
+    "ARREST_YEAR",
+    "ARREST_MONTH",
+    "ARREST_DAY",
+    "ARREST_WEEKDAY",
+    "ARREST_PRECINCT",
+    "JURISDICTION_CODE",
+    "ARREST_BORO",
+    "AGE_GROUP",
+    "PERP_SEX",
+    "PERP_RACE"
+]
+
+
+# ---------------------------------------------------------
+# SIDEBAR
+# ---------------------------------------------------------
+with st.sidebar:
+    st.header("📊 Model Information")
+    st.divider()
+
+    st.subheader("Algorithm")
+    st.info(display_algorithm)
+
+    st.subheader("Target")
+    st.info("NYPD Arrest Law Category")
+
+    st.subheader("Model Inputs")
+    st.info(f"{len(expected_features)} leakage-controlled attributes")
+
+    st.subheader("Status")
+    st.warning("Model Validation in Progress")
+
+    st.divider()
+
+    st.caption(
+        "Offence descriptions, law codes, KY codes and PD codes were "
+        "removed to reduce target leakage."
+    )
+
+
+# ---------------------------------------------------------
+# PAGE TITLE AND DESCRIPTION
+# ---------------------------------------------------------
 st.markdown(
-    '<div class="main-title">🚔 NYPD Arrest Law Category Prediction</div>',
+    """
+    <style>
+    .main-title {
+        font-size: 42px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .subtitle {
+        font-size: 17px;
+        margin-bottom: 28px;
+    }
+    </style>
+    """,
     unsafe_allow_html=True
 )
 
-st.write(
-    "Predict the likely arrest law category using a deployment-ready Decision Tree classification model."
+st.markdown(
+    '<div class="main-title">🚓 NYPD Arrest Law Category Prediction</div>',
+    unsafe_allow_html=True
 )
 
-st.sidebar.subheader("📊 Model Information")
-st.sidebar.markdown("---")
+st.markdown(
+    """
+    <div class="subtitle">
+    Predict the likely arrest law category using a leakage-controlled
+    Gradient Boosting machine-learning pipeline.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-st.sidebar.markdown("**Algorithm**")
-st.sidebar.info("Decision Tree Classifier")
-
-st.sidebar.markdown("**Target**")
-st.sidebar.info("NYPD Law Category")
-
-st.sidebar.markdown("**Features**")
-st.sidebar.info("8 Arrest Attributes")
-
-st.sidebar.markdown("**Model Accuracy**")
-st.sidebar.info("94.82%")
-
-st.sidebar.markdown("**Status**")
-st.sidebar.success("Deployment Ready ✅")
+st.info(
+    "This educational model intentionally excludes offence descriptions "
+    "and offence/law codes because those fields may directly reveal the "
+    "target category."
+)
 
 st.header("Enter Arrest Information")
-col1, col2 = st.columns(2)
 
-age_options = [x for x in category_mappings["AGE_GROUP"]
-               if str(x).lower() != "nan" and str(x) != "(null)"]
 
-sex_options = [x for x in category_mappings["PERP_SEX"]
-               if str(x).lower() != "nan" and str(x) != "(null)"]
+# ---------------------------------------------------------
+# PREPARE DROPDOWN OPTIONS
+# ---------------------------------------------------------
+age_options = clean_options(
+    category_mappings.get(
+        "AGE_GROUP",
+        df["AGE_GROUP"].dropna().unique()
+    )
+)
 
-boro_map = {
+sex_options = clean_options(
+    category_mappings.get(
+        "PERP_SEX",
+        df["PERP_SEX"].dropna().unique()
+    )
+)
+
+race_options = clean_options(
+    category_mappings.get(
+        "PERP_RACE",
+        df["PERP_RACE"].dropna().unique()
+    )
+)
+
+borough_codes = clean_options(
+    category_mappings.get(
+        "ARREST_BORO",
+        df["ARREST_BORO"].dropna().unique()
+    )
+)
+
+borough_names = {
     "B": "Bronx",
     "K": "Brooklyn",
     "M": "Manhattan",
@@ -70,117 +198,172 @@ boro_map = {
     "S": "Staten Island"
 }
 
-with col1:
-    age_group = st.selectbox("Age Group", age_options)
+available_boroughs = {
+    borough_names[code]: code
+    for code in borough_codes
+    if code in borough_names
+}
 
-    sex = st.selectbox("Sex", sex_options)
+precinct_options = sorted(
+    pd.to_numeric(
+        df["ARREST_PRECINCT"],
+        errors="coerce"
+    )
+    .dropna()
+    .astype(int)
+    .unique()
+    .tolist()
+)
+
+jurisdiction_options = sorted(
+    pd.to_numeric(
+        df["JURISDICTION_CODE"],
+        errors="coerce"
+    )
+    .dropna()
+    .unique()
+    .tolist()
+)
+
+
+# ---------------------------------------------------------
+# USER INPUTS
+# ---------------------------------------------------------
+col1, col2 = st.columns(2)
+
+with col1:
+    age_group = st.selectbox(
+        "Age Group",
+        age_options
+    )
+
+    sex = st.selectbox(
+        "Sex",
+        sex_options
+    )
 
     borough_full = st.selectbox(
         "Arrest Borough",
-        list(boro_map.values())
+        list(available_boroughs.keys())
     )
 
-    borough = {v: k for k, v in boro_map.items()}[borough_full]
+    borough = available_boroughs[borough_full]
 
     race = st.selectbox(
         "Race",
-        category_mappings["PERP_RACE"]
+        race_options
     )
+
 
 with col2:
-    ofns_desc = st.selectbox(
-    "Offense Description",
-    sorted(df["OFNS_DESC"].dropna().unique())
+    arrest_precinct = st.selectbox(
+        "Arrest Precinct",
+        precinct_options,
+        help=(
+            "The NYPD precinct number where the arrest was recorded. "
+            "Precincts are identified numerically."
+        )
     )
 
-    filtered_pd = df[df["OFNS_DESC"] == ofns_desc]
-
-    pd_desc = st.selectbox(
-        "PD Description",
-        sorted(filtered_pd["PD_DESC"].dropna().unique())
+    jurisdiction_code = st.selectbox(
+        "Jurisdiction Code",
+        jurisdiction_options,
+        help=(
+            "A numerical code describing the jurisdiction responsible "
+            "for the arrest record."
+        )
     )
 
-    filtered_codes = filtered_pd[filtered_pd["PD_DESC"] == pd_desc]
+    st.markdown("#### Automatically generated date attributes")
 
-    ky_cd = st.selectbox(
-        "Key (KY) Offense Code",
-        sorted(filtered_codes["KY_CD"].dropna().unique())
-    )
+    current_date = date.today()
 
-    pd_cd = st.selectbox(
-        "Police Department (PD) Offense Code",
-        sorted(filtered_codes["PD_CD"].dropna().unique())
-    )
+    st.write(f"**Arrest year:** {current_date.year}")
+    st.write(f"**Arrest month:** {current_date.month}")
+    st.write(f"**Arrest day:** {current_date.day}")
+    st.write(f"**Weekday code:** {current_date.weekday()}")
 
-input_raw = pd.DataFrame({
-    "ARREST_BORO": [borough],
-    "AGE_GROUP": [age_group],
-    "PERP_SEX": [sex],
-    "PERP_RACE": [race],
-    "OFNS_DESC": [ofns_desc],
-    "PD_DESC": [pd_desc],
-    "KY_CD": [ky_cd],
-    "PD_CD": [pd_cd],
+
+# ---------------------------------------------------------
+# CREATE RAW PIPELINE INPUT
+# ---------------------------------------------------------
+input_final = pd.DataFrame({
+    "ARREST_YEAR": [int(current_date.year)],
+    "ARREST_MONTH": [int(current_date.month)],
+    "ARREST_DAY": [int(current_date.day)],
+    "ARREST_WEEKDAY": [int(current_date.weekday())],
+    "ARREST_PRECINCT": [int(arrest_precinct)],
+    "JURISDICTION_CODE": [float(jurisdiction_code)],
+    "ARREST_BORO": [str(borough)],
+    "AGE_GROUP": [str(age_group)],
+    "PERP_SEX": [str(sex)],
+    "PERP_RACE": [str(race)]
 })
 
-input_encoded = pd.get_dummies(input_raw)
 
-input_final = pd.DataFrame(0, index=[0], columns=feature_columns)
-
-for col in input_encoded.columns:
-    if col in input_final.columns:
-        input_final[col] = input_encoded[col]
-
+# ---------------------------------------------------------
+# LAW CATEGORY MEANINGS
+# ---------------------------------------------------------
 law_category_meanings = {
-    "M": "Misdemeanor",
     "F": "Felony",
+    "M": "Misdemeanor",
     "V": "Violation",
     "I": "Infraction",
     "9": "Unknown / Other"
 }
 
-st.markdown("""
-<style>
-div.stButton > button {
-    background-color: #28a745;
-    color: white;
-    border-radius: 8px;
-    font-weight: bold;
-    padding: 0.6em 1.2em;
-}
-</style>
-""", unsafe_allow_html=True)
-if st.button("Predict Law Category"):
-    prediction = model.predict(input_final)
 
-    probability = model.predict_proba(input_final)
-    confidence = probability.max() * 100
+# ---------------------------------------------------------
+# PREDICTION
+# ---------------------------------------------------------
+st.divider()
+
+if st.button(
+    "Predict Law Category",
+    type="primary",
+    use_container_width=False
+):
     try:
-        predicted_code = label_encoder.inverse_transform(prediction)[0]
-    except:
-        predicted_code = prediction[0]
+        prediction = model.predict(input_final)
+        predicted_code = str(prediction[0])
 
-    predicted_code = str(predicted_code)
+        prediction_meaning = law_category_meanings.get(
+            predicted_code,
+            "Unknown Category"
+        )
 
-    prediction_meaning = law_category_meanings.get(
-        predicted_code,
-        "Unknown Category"
-    )
+        probability = model.predict_proba(input_final)[0]
+        confidence = float(probability.max() * 100)
 
-    st.divider()
+        st.divider()
+        st.subheader("📊 Prediction Result")
 
-    st.subheader("📊 Prediction Result")
+        st.success(
+            f"Predicted Law Category: "
+            f"{prediction_meaning} ({predicted_code})"
+        )
 
-    st.success(
-        f"Predicted Law Category: {prediction_meaning} ({predicted_code})"
-    )
+        st.info(
+            f"Prediction Confidence: {confidence:.2f}%"
+        )
 
-    st.info(f"Prediction Confidence: {confidence:.2f}%")
-    st.caption(
-        "Prediction generated successfully using the final deployment Decision Tree model."
-    )
-    st.markdown("---")
+        st.caption(
+            "The confidence value represents the model's estimated "
+            "probability for its selected class. It should not be "
+            "interpreted as legal advice or certainty."
+        )
 
-    st.caption(
-    "Version 1.0 | Developed by Martin Ude | NYPD Arrest Law Category Prediction | Decision Tree Classifier | Python • Streamlit • Scikit-learn"
+    except Exception as error:
+        st.error(f"Prediction could not be generated: {error}")
+
+
+# ---------------------------------------------------------
+# FOOTER
+# ---------------------------------------------------------
+st.divider()
+
+st.caption(
+    "Leakage-Controlled Rebuild | Developed by Martin Ude | "
+    "NYPD Arrest Law Category Prediction | "
+    "Gradient Boosting Classification"
 )

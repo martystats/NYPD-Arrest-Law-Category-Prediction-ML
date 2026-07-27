@@ -1,610 +1,236 @@
-\# 🚔 NYPD Arrest Law Category Prediction ML
+# 🚔 NYPD Arrest Law Category Prediction using Machine Learning
 
-
-
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue?logo=pandas&logoColor=white)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange?logo=scikitlearn&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red?logo=streamlit&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue?logo=pandas)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange?logo=scikitlearn)
+![Streamlit](https://img.shields.io/badge/Streamlit-Web%20Application-red?logo=streamlit)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+---
 
+# 📖 Project Overview
 
-\# 📖 Project Overview
+This project presents a **leakage-controlled machine learning application** that predicts the likely **NYPD arrest law category** using historical arrest records published by the New York City Police Department (NYPD).
 
+The project was rebuilt after identifying and removing target leakage from an earlier version. The final model follows good machine learning practices by using only the features available at prediction time.
 
+The application demonstrates an end-to-end machine learning workflow including:
 
-The \*\*NYPD Arrest Law Category Prediction ML\*\* project is an end-to-end machine learning application that predicts the likely \*\*NYPD Law Category\*\* based on arrest information entered by the user.
+- Data cleaning
+- Exploratory Data Analysis (EDA)
+- Feature engineering
+- Target leakage detection and removal
+- Model comparison
+- Hyperparameter tuning
+- Model evaluation
+- Streamlit deployment
+- GitHub project documentation
 
+---
 
+# 🎯 Project Objective
 
-The project demonstrates the complete machine learning lifecycle, including:
+The objective of this project is to build a machine learning classifier capable of predicting the likely NYPD arrest law category based on information available at the time of an arrest.
 
+This project is intended for educational and portfolio purposes to demonstrate practical machine learning development and deployment. It should not be used for legal, policing, or operational decision-making.
 
+---
 
-\- Data Cleaning
+# 🧠 Machine Learning Pipeline
 
-\- Exploratory Data Analysis (EDA)
+The project follows a complete end-to-end supervised machine learning workflow.
 
-\- Feature Engineering
+1. Raw NYPD Arrest Dataset
+2. Data Cleaning
+3. Exploratory Data Analysis (EDA)
+4. Feature Engineering
+5. Target Leakage Detection
+6. Leakage Removal
+7. Train / Validation / Test Split
+8. Pipeline Construction
+9. Model Training
+10. Hyperparameter Tuning
+11. Model Evaluation
+12. Streamlit Deployment
+13. GitHub Documentation
 
-\- Machine Learning Model Development
+---
 
-\- Model Evaluation
+# 📊 Dataset Information
 
-\- Streamlit Web Application Deployment
+Dataset Source:
+New York City Open Data (NYPD Arrest Data)
 
+Target Variable:
 
+- LAW_CAT_CD
 
-The application provides an intuitive web interface where users can enter arrest details and instantly receive:
+Target Classes
 
+- Felony (F)
+- Misdemeanor (M)
+- Violation (V)
+- Infraction (I)
 
+Original Dataset Size
 
-\- Predicted Law Category
+- 584,852 arrest records
 
-\- Prediction Confidence
+Final Model Features (Leakage-Controlled)
 
-\- Model Information
+- Arrest Year
+- Arrest Month
+- Arrest Day
+- Arrest Weekday
+- Arrest Precinct
+- Jurisdiction Code
+- Arrest Borough
+- Age Group
+- Sex
+- Race
 
-\- Model Accuracy
+---
 
+# 🤖 Final Model
 
+## Selected Algorithm
 
-\---
+Gradient Boosting Classifier
 
+### Why Gradient Boosting?
 
+Several classification algorithms were evaluated during model development, including:
 
-\# 🎯 Problem Statement
+- Logistic Regression
+- Decision Tree
+- Random Forest
+- Gradient Boosting
 
+After evaluating multiple classification algorithms, Gradient Boosting Classifier was selected as the final model because it provided the best balance between predictive performance, generalization, and robustness on the leakage-controlled dataset.
+---
 
+# 🔒 Target Leakage Removal
 
-The New York Police Department records thousands of arrests each year.
+One of the major objectives of this project was to eliminate target leakage.
 
+The original dataset contained variables that directly revealed or strongly implied the target class, including offence descriptions and offence codes.
 
+To produce a realistic machine learning model, these variables were removed before training.
 
-Given important arrest information such as:
+The final model uses only information that would realistically be available at prediction time.
 
+This results in a more reliable evaluation and a deployment-ready machine learning workflow.
 
+---
 
-\- Age Group
+# 📈 Model Performance
 
-\- Sex
+The final model was evaluated using a separate validation dataset after removing all target leakage variables.
 
-\- Arrest Borough
+Evaluation focused on measuring the model's ability to generalize to unseen arrest records rather than memorizing target-related information.
 
-\- Race
+Performance metrics considered during model selection included:
 
-\- Offense Description
+- Accuracy
+- Macro F1 Score
+- Balanced Accuracy
+- Classification Report
+- Confusion Matrix
 
-\- PD Description
+The final Gradient Boosting Classifier demonstrated the best balance between predictive performance, generalization, and robustness on the leakage-controlled validation dataset.
 
-\- Key Offense Code
+---
 
-\- Police Department Offense Code
+# 💻 Streamlit Application
 
+The project includes an interactive Streamlit web application that allows users to generate predictions from leakage-controlled arrest information.
 
+### Application Features
 
-can we accurately predict the \*\*Law Category\*\* associated with that arrest?
+- Modern responsive interface
+- Automatic date feature generation
+- Leakage-controlled prediction pipeline
+- Prediction confidence score
+- Gradient Boosting classifier
+- Clean sidebar with model information
+- Real-time prediction
 
+The deployed application only accepts variables available before an arrest law category is known, ensuring realistic deployment behaviour.
 
+---
 
-This project answers that question using supervised machine learning.
+# 📷 Application Preview
 
+The Streamlit application provides a simple interface for predicting the likely NYPD arrest law category from information that would realistically be available before the final law category is known.
 
+The interface includes:
 
-\---
+- Two-column responsive layout
+- Leakage-controlled prediction inputs
+- Automatic date feature generation
+- Prediction confidence score
+- Model information sidebar
+- Real-time classification results
 
+*(Application screenshots can be added here.)*
 
+---
 
-\# 🎯 Project Objectives
-
-
-
-The objectives of this project are to:
-
-
-
-\- Build an end-to-end machine learning classification pipeline.
-
-\- Clean and preprocess real-world NYPD arrest data.
-
-\- Train a Decision Tree Classification model.
-
-\- Evaluate model performance.
-
-\- Deploy the model using Streamlit.
-
-\- Provide an interactive interface for predictions.
-
-
-
-\---
-
-
-
-\# 📂 Dataset Information
-
-
-
-\*\*Dataset:\*\* NYPD Arrest Data
-
-
-
-The dataset contains historical arrest records collected by the New York Police Department.
-
-
-
-\### Target Variable
-
-
-
-\- Law Category
-
-
-
-\### Input Features
-
-
-
-\- Age Group
-
-\- Sex
-
-\- Arrest Borough
-
-\- Race
-
-\- Offense Description
-
-\- Police Department Description
-
-\- Key Offense Code (KY\_CD)
-
-\- Police Department Offense Code (PD\_CD)
-
-
-
-\---
-
-
-
-\# 🧹 Data Cleaning \& Preprocessing
-
-
-
-The following preprocessing steps were performed:
-
-
-
-\- Removed duplicate records
-
-\- Handled missing values
-
-\- Removed invalid categories
-
-\- Filtered null dropdown options
-
-\- Encoded categorical variables
-
-\- Prepared deployment feature columns
-
-\- Saved reusable encoding objects
-
-
-
-Deployment artifacts include:
-
-
-
-\- best\_clean\_arrest\_model.pkl
-
-\- clean\_feature\_columns.pkl
-
-\- category\_mappings.pkl
-
-\- label\_encoder.pkl
-
-
-
-\---
-
-
-
-\# 📊 Exploratory Data Analysis (EDA)
-
-
-
-The dataset was explored using:
-
-
-
-\- Summary statistics
-
-\- Missing value analysis
-
-\- Class distribution
-
-\- Feature distributions
-
-\- Correlation analysis
-
-\- Data quality checks
-
-
-
-The EDA provided insights into the characteristics of NYPD arrest records before model development.
-
-
-
-\---
-
-
-
-\# ⚙️ Feature Engineering
-
-
-
-Feature engineering included:
-
-
-
-\- Category encoding
-
-\- Feature alignment for deployment
-
-\- Consistent encoding between training and prediction
-
-\- Deployment-ready feature vector creation
-
-
-
-This ensures that user inputs are transformed into the exact format expected by the trained model.
-
-
-
-\---
-
-
-
-\# 🤖 Machine Learning Model
-
-
-
-| Property | Value |
-
-|----------|-------|
-
-| Algorithm | Decision Tree Classifier |
-
-| Problem Type | Multi-Class Classification |
-
-| Accuracy | \*\*94.82%\*\* |
-
-| Features | 8 Arrest Attributes |
-
-| Deployment | Streamlit |
-
-
-
-\---
-
-
-
-\# 📈 Model Performance
-
-
-
-\## Overall Accuracy
-
-
-
-\*\*94.82%\*\*
-
-
-
-The trained Decision Tree model achieved high classification accuracy while maintaining fast prediction speed suitable for deployment.
-
-
-
-The application also displays:
-
-
-
-\- Predicted Law Category
-
-\- Prediction Confidence
-
-
-
-for every prediction.
-
-
-
-\---
-
-
-
-\# 🖥️ Streamlit Application Features
-
-
-
-The deployed application includes:
-
-
-
-✅ Professional User Interface
-
-
-
-✅ Two-column responsive layout
-
-
-
-✅ Clean dropdown menus
-
-
-
-✅ Borough names displayed instead of abbreviations
-
-
-
-✅ Automatic feature encoding
-
-
-
-✅ Prediction Confidence
-
-
-
-✅ Model Accuracy
-
-
-
-✅ Model Information Sidebar
-
-
-
-✅ Deployment Ready Status
-
-
-
-✅ Version Information
-
-
-
-\---
-
-
-
-\# 📁 Project Structure
-
-
-
-```
-
-NYPD\_Arrest\_Classification/
-
-
-
-│
-
-├── app.py
-
-├── README.md
-
-├── requirements.txt
-
-├── best\_clean\_arrest\_model.pkl
-
-├── clean\_feature\_columns.pkl
-
-├── category\_mappings.pkl
-
-├── label\_encoder.pkl
-
-├── nypd\_arrest\_data\_cleaned.csv
-
-└── Notebook.ipynb
-
-```
-
-
-
-\---
-
-
-
-\# 🛠️ Technologies Used
-
-
-
-\- Python
-
-\- Pandas
-
-\- NumPy
-
-\- Scikit-Learn
-
-\- Joblib
-
-\- Streamlit
-
-\- Jupyter Notebook
-
-
-
-\---
-
-
-
-\# 🚀 Installation
-
-
+# ⚙️ Installation
 
 Clone the repository
 
-
-
 ```bash
-
 git clone https://github.com/martystats/NYPD-Arrest-Law-Category-Prediction-ML.git
-
 ```
 
-
-
-Move into the project
-
-
+Move into the project directory
 
 ```bash
-
 cd NYPD-Arrest-Law-Category-Prediction-ML
-
 ```
-
-
 
 Install dependencies
 
-
-
 ```bash
-
 pip install -r requirements.txt
-
 ```
 
-
-
-Run the application
-
-
+Run the Streamlit application
 
 ```bash
-
 streamlit run app.py
-
 ```
 
+---
 
+# 🚀 Future Improvements
 
-\---
+Possible future enhancements include:
 
+- Deploy the application online using Streamlit Community Cloud
+- Add geographical visualization of arrest locations
+- Introduce explainable AI (SHAP) for prediction interpretation
+- Compare additional ensemble learning algorithms
+- Expand prediction using temporal crime trend analysis
 
+---
 
-\# 📸 Application Screenshots
+# 📄 License
 
+This project is released under the MIT License.
 
+---
 
-\## Home Page
+# 👨‍💻 Author
 
+**Martin Ude**
 
-
-\*(Insert Screenshot Here)\*
-
-
-
-\---
-
-
-
-\## Prediction Example
-
-
-
-\*(Insert Screenshot Here)\*
-
-
-
-\---
-
-
-
-\## Model Information Sidebar
-
-
-
-\*(Insert Screenshot Here)\*
-
-
-
-\---
-
-
-
-\# 🔮 Future Improvements
-
-
-
-Potential enhancements include:
-
-
-
-\- Random Forest comparison
-
-\- XGBoost implementation
-
-\- Hyperparameter tuning
-
-\- SHAP explainability
-
-\- Feature importance visualization
-
-\- Online deployment
-
-\- REST API integration
-
-
-
-\---
-
-
-
-\# 👨‍💻 Developer
-
-
-
-\*\*Martin Ude\*\*
-
-
-
-Machine Learning | Data Analytics | Python | Streamlit
-
-
+Data Analyst | Machine Learning Developer
 
 GitHub:
-
-
-
 https://github.com/martystats
 
+---
 
-
-\---
-
-
-
-\# 📜 License
-
-
-
-This project is licensed under the MIT License.
-
-
-
-\---
-
-
-
-\# ⭐ Acknowledgements
-
-
-
-This project was developed for educational and portfolio purposes to demonstrate practical machine learning skills using publicly available NYPD arrest data.
-
-
-
-If you found this project helpful, consider giving the repository a ⭐ on GitHub.
-
+## ⭐ If you found this project useful, consider starring the repository.
